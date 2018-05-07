@@ -12,7 +12,7 @@ class swampLogs(object):
         idFilename ........ list of steam ids of suspicious users
         wordFilename ...... list of suspicious words
 
-        logsList .......... list of logEntry instances
+        logList .......... list of logEntry instances
 
                             toggle retention of...
         retainVideos ...... video logs (default: True)
@@ -43,7 +43,7 @@ class swampLogs(object):
         self.idFileName = idFileName
         self.wordFilename = wordFilename
 
-        self.logsList = []
+        self.logList = []
 
         self.retainVideos = retainVideos
         self.retainSprays = retainSprays
@@ -67,10 +67,18 @@ class swampLogs(object):
                 t,n,i,l = log
                 toAppend = logEntry(t,n,i,l)
                 toAppend.process()
-                self.logsList.append(toAppend)
+                self.logList.append(toAppend)
         except:
             return False
         return True
+
+    def getLists(self):
+        """
+
+        """
+        for log in self.logList:
+            if log.
+        return tuple()
 
 
 class logEntry(object):
@@ -159,11 +167,11 @@ class logEntry(object):
             self.logType, self.source, self.id = self.sprayRegex.match(self.rawLog).groups()
 
         # Vote detection
-        elif self.rawLog[0] == "c":
+        elif self.rawLog[0:2] in {"fa","cr"}:
             self.logType = "vote"
 
         # Staff action detection
-        elif self.rawLog[0] in {"p","b","u","k"}:
+        elif self.rawLog[0:2] in {"pe","ba","us","ki"}:
             self.logType = "staffaction"
 
         else: self.logType = "unknown"
