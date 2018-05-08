@@ -5,7 +5,7 @@
 # - Chat monitoring
 # - Connect monitoring
 # - Keyword detection
-#
+# - rad
 
 from logClasses import *
 import os.path
@@ -15,7 +15,7 @@ rawLogs = ""
 
 def main():
     global rawLogs
-    
+
     if not rawLogs:
         rawLogs = input("Enter log file name: ")
     while not os.path.isfile(rawLogs):
