@@ -9,6 +9,7 @@
 
 from logClasses import *
 import os.path
+import click
 
 # log file name (optional)
 rawLogs = ""
@@ -24,10 +25,9 @@ def main():
 
     logs = swampLogs(rawLogs)
     logs.build()
-
-    for log in logs.logList:
-        if(log.type() == "video"):
-            print(log)
+    videos, sprays = logs.getLists("video","spray")
+    for video in videos:
+        print(video)
 
 if __name__ == "__main__":
     main()

@@ -59,6 +59,7 @@ class swampLogs(object):
         Read log file and create log entries via logEntry. Return false if building
         error occured, otherwise return true
         """
+
         try:
             with open(self.logsFilename, "r", encoding = encode) as rawFile:
                 self.rawStrings = self.logRegex.findall(rawFile.read())
@@ -72,13 +73,23 @@ class swampLogs(object):
             return False
         return True
 
-    def getLists(self):
+
+    def getLists(self,*types):
+        """
+        Returns list(s) of a user-defined log type(s) and returns as tuple in
+        order originally requested
         """
 
-        """
+        self.logLists = [[] for type in types]
         for log in self.logList:
-            if log.
-        return tuple()
+            for num,type in enumerate(types):
+                if type == log.type():
+                    if ((log.source == "horatio") and not self.retainHoratio) or ((log.source == "twitch") and not self.retainTwitch):
+                        continue
+                    self.logLists[num].append(log)
+                    break
+
+        return tuple(self.logLists)
 
 
 class logEntry(object):
