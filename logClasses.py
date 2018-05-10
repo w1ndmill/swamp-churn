@@ -12,14 +12,9 @@ class swampLogs(object):
         idFilename ........ list of steam ids of suspicious users
         wordFilename ...... list of suspicious words
 
-        logList .......... list of logEntry instances
+        logList ........... list of logEntry instances
 
                             toggle retention of...
-        retainVideos ...... video logs (default: True)
-        retainSprays ...... spray logs (default: True)
-        retainChat ........ chat logs (default: False)
-        retainConnects .... connect/disconnect logs (default: False)
-        retainStaff ....... staff action logs (default: False)
         retainHoratio ..... horatio sourced videos (default: False)
         retainTwitch ...... twitch sourced videos (default: False)
 
@@ -33,8 +28,7 @@ class swampLogs(object):
 
 
     def __init__(self, logsFilename, blacklistFilename = None, idFileName = None, wordFilename = None,
-                 retainVideos = True, retainSprays = True, retainChat = False, retainConnects = False,
-                 retainStaff = False, retainHoratio = False, retainTwitch = False):
+                 retainHoratio = False, retainTwitch = False):
         """
         Set default settings and filenames for logs list
         """
@@ -45,11 +39,6 @@ class swampLogs(object):
 
         self.logList = []
 
-        self.retainVideos = retainVideos
-        self.retainSprays = retainSprays
-        self.retainChat = retainChat
-        self.retainConnects = retainConnects
-        self.retainStaff = retainStaff
         self.retainHoratio = retainHoratio
         self.retainTwitch = retainTwitch
 
