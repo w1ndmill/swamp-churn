@@ -63,10 +63,10 @@ class swampLogs(object):
         return True
 
 
-    def getLists(self,*types):
+    def getLists(self,*types,removeDupes=True):
         """
         Returns list(s) of a user-defined log type(s) and returns as tuple in
-        order originally requested
+        order originally requested. Returns empty list if undefined type
         """
 
         self.logLists = [[] for type in types]
@@ -77,8 +77,33 @@ class swampLogs(object):
                         continue
                     self.logLists[num].append(log)
                     break
-
+        if removeDupes:
+            self.logLists = [self.removeDuplicates(logList) for logList in self.logLists]
         return tuple(self.logLists)
+
+    @staticmethod
+    def removeDuplicates(logs):
+        """
+        Removes duplicate video/spray logs from the same user from a list
+        of all the same type. Processes video, spray, and chat logs. Returns
+        input if unsupported type
+        """
+
+        final = []
+
+        if logs:
+            if logs[0].type() in {"video","spray"}:
+                logs.sort(key=lambda lg: lg.id)
+                logs.sort(key=lambda lg: lg.steamid)
+                for logNum in range(len(logs)-1):
+                    if (logs[logNum].id == logs[logNum+1].id) and (logs[logNum].steamid == logs[logNum+1].steamid):
+                        continue
+                    final.append(logs[logNum])
+                return final
+            elif logs[0].type() == "chat":
+                pass
+        return logs
+
 
 
 class logEntry(object):
@@ -94,7 +119,7 @@ class logEntry(object):
         logType ........... type of event that occurred (e.g. chat message, video played)
         title ............. title of video played; applicable for videos only
         source ............ source of the event (e.g. youtube, imgur); applicable for sprays/videos
-        id ................ image/video id for event; applicble for sprays/videos
+        id ................ image/video id for event; applicable for sprays/videos
         message ........... message typed in chat; applicable for chat
         ip ................ partially censored IP address of user; applicable for connects
 

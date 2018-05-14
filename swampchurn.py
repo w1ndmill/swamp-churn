@@ -5,6 +5,7 @@
 # - Chat monitoring
 # - Keyword detection
 # - Prompt to continue if forcelogs doesn't exist
+# - Database implementation and arguement
 
 from logClasses import swampLogs, logEntry
 from os.path import isfile as isFile
@@ -12,12 +13,20 @@ from sys import exit
 import argparse
 import configparser
 
+configFile = "settings.ini"
+
 def verifyFile(filename, fromParser = True):
     if not isFile(filename):
         if fromParser: raise argparse.ArgumentTypeError(f"File {filename} not found. Aborting...")
         print(f"File {filename} not found. Aborting...")
         exit()
     return filename
+
+def createConfig(cfg):
+    with open(cfg,'w+') as newSettings:
+        newSettings.write("[Paths]\nrawLogs = \ndatabase = ")
+    print(f"No settings file found. New \"{configFile}\" created")
+    exit()
 
 def main():
     desc = """
@@ -34,29 +43,24 @@ def main():
     parser.add_argument('-u', '--addUser', action='store', help = 'add/overwrite user to database')
     parser.add_argument('-s', '--addSpray', action='store', help = 'add/overwrite spray id to database')
     parser.add_argument('-v', '--addVideo', action='store', help = 'add/overwrite video id to database')
-
-    filegroup.add_argument('-n', '--noBuild', action='store_false', help='prevent building of logs')
-    filegroup.add_argument('-f', '--forceLogs', type=verifyFile,  help = 'override raw log file from config')
+    filegroup.add_argument('-n', '--noBuild', action='store_true', help = 'prevent building of logs')
+    filegroup.add_argument('-f', '--forceLogs', type=verifyFile,  help = 'override raw log filename from config')
+    parser.add_argument('-d', '--forcedb', type=verifyFile, help = 'override database filename from config')
     args = parser.parse_args()
 
+    global configFile
     config = configparser.ConfigParser()
-    if isFile("settings.ini"):
-        config.read("settings.ini")
-    else:
-        with open("settings.ini",'w+') as newSettings:
-            newSettings.write("[Paths]\nrawLogs = \ndatabase = ")
-        print("No settings file found. New \"settings.ini\" created")
-        exit()
+    if isFile(configFile): config.read(configFile)
+    else: createConfig(configFile)
 
-    if args.forceLogs: rawLogs = args.forceLogs
-    else: rawLogs = verifyFile(config["Paths"]["rawLogs"], False)
+    if not args.noBuild:
+        rawLogs = args.forceLogs if args.forceLogs else verifyFile(config["Paths"]["rawLogs"], False)
+        logs = swampLogs(rawLogs)
+        logs.build()
 
-    logs = swampLogs(rawLogs)
-    logs.build()
-
-    videos, sprays = logs.getLists("video","spray")
-    for video in videos:
-        print(video)
+        videos, sprays = logs.getLists("video","spray")
+        for video in videos:
+            print(video)
 
 if __name__ == "__main__":
     main()
