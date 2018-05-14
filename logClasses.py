@@ -63,7 +63,7 @@ class swampLogs(object):
         return True
 
 
-    def getLists(self,*types,removeDupes=True):
+    def getLists(self,*types,removeDupes=True,retainOrder=False):
         """
         Returns list(s) of a user-defined log type(s) and returns as tuple in
         order originally requested. Returns empty list if undefined type
@@ -78,11 +78,12 @@ class swampLogs(object):
                     self.logLists[num].append(log)
                     break
         if removeDupes:
-            self.logLists = [self.removeDuplicates(logList) for logList in self.logLists]
+            self.logLists = [self.removeDuplicates(logList,retainOrder) for logList in self.logLists]
         return tuple(self.logLists)
 
+
     @staticmethod
-    def removeDuplicates(logs):
+    def removeDuplicates(logs,retainOrder):
         """
         Removes duplicate video/spray logs from the same user from a list
         of all the same type. Processes video, spray, and chat logs. Returns
@@ -92,19 +93,20 @@ class swampLogs(object):
         final = []
 
         if logs:
-            if logs[0].type() in {"video","spray"}:
+            listType = logs[0].type()
+
+            if listType in {"video","spray"}:
                 logs.sort(key=lambda lg: lg.id)
                 logs.sort(key=lambda lg: lg.steamid)
+
                 for logNum in range(len(logs)-1):
                     if (logs[logNum].id == logs[logNum+1].id) and (logs[logNum].steamid == logs[logNum+1].steamid):
                         continue
                     final.append(logs[logNum])
+                if retainOrder:
+                    final.sort(key=lambda lg:lg.time)
                 return final
-            elif logs[0].type() == "chat":
-                pass
         return logs
-
-
 
 class logEntry(object):
     """
@@ -131,7 +133,7 @@ class logEntry(object):
     """
     vidRegex = re.compile(r"played (video): (.+) \((\w+) \/ (.+)\)")
     sprayRegex = re.compile(r"created (spray): \w+\.(imgur|gfycat).com\/(\w+)\.?")
-    # chatRegex = re.compile(r'')
+    chatRegex = re.compile(r"(?:: )?(.+)")
     # connectRegex = re.compile(r'')
 
     def __init__(self, time, username, steamid, rawLog):
@@ -173,6 +175,7 @@ class logEntry(object):
         # Chat detection
         if self.rawLog[0] in {":","/"}:
             self.logType = "chat"
+            self.message = self.chatRegex.match(self.rawLog)
 
         # Connection detection
         elif self.rawLog[0] in {"d","s"}:
