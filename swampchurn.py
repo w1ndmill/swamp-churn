@@ -24,9 +24,14 @@ def verifyFile(filename, fromParser = True):
 
 def createConfig(cfg):
     with open(cfg,'w+') as newSettings:
-        newSettings.write("[Paths]\nrawLogs = \ndatabase = ")
+        newSettings.write("[Paths]\nrawLogs = \ndatabase = \nchatDump = logs\chatDump.txt")
     print(f"No settings file found. New \"{configFile}\" created")
     exit()
+
+def appendToFile(lst,filename):
+    with open(filename,"a+",encoding="utf8") as dump:
+        for item in lst:
+            dump.write(str(item.message) + "\n")
 
 def main():
     desc = """
@@ -39,6 +44,7 @@ def main():
     """
     parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawTextHelpFormatter)
     filegroup = parser.add_mutually_exclusive_group()
+
     parser.add_argument('-k', '--addKeyword', action='store', help = 'add/overwrite keyword to database ')
     parser.add_argument('-u', '--addUser', action='store', help = 'add/overwrite user to database')
     parser.add_argument('-s', '--addSpray', action='store', help = 'add/overwrite spray id to database')
@@ -46,6 +52,8 @@ def main():
     filegroup.add_argument('-n', '--noBuild', action='store_true', help = 'prevent building of logs')
     filegroup.add_argument('-f', '--forceLogs', type=verifyFile,  help = 'override raw log filename from config')
     parser.add_argument('-d', '--forcedb', type=verifyFile, help = 'override database filename from config')
+    parser.add_argument('--storeChatLogs', action='store_true', help = 'store chat logs into file for misc use')
+
     args = parser.parse_args()
 
     global configFile
@@ -53,14 +61,15 @@ def main():
     if isFile(configFile): config.read(configFile)
     else: createConfig(configFile)
 
+
     if not args.noBuild:
         rawLogs = args.forceLogs if args.forceLogs else verifyFile(config["Paths"]["rawLogs"], False)
         logs = swampLogs(rawLogs)
         logs.build()
 
-        videos, sprays = logs.getLists("video","spray")
-        for video in videos:
-            print(video)
+        if args.storeChatLogs:
+            messages = logs.getLists("chat")
+            appendToFile(messages[0],verifyFile(config["Paths"]["chatDump"]))
 
 if __name__ == "__main__":
     main()
